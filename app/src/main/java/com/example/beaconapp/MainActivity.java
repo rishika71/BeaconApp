@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.ILogin, RegisterFragment.IRegister {
+public class MainActivity extends AppCompatActivity implements LoginFragment.ILogin, RegisterFragment.IRegister, ProductFragment.IProducts {
 
     private final OkHttpClient client = new OkHttpClient();
     public static final String BASE_URL  = "https://mysterious-beach-05426.herokuapp.com/"; // http://10.0.2.2:3000/
@@ -49,9 +49,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         beaconManager = new BCBeaconManager();
         beaconManager.registerCallback( mBeaconManagerCallback );
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.containerLayout, new LoginFragment())
-                .commit();
+        sendLoginView();
+
     }
 
     @Override
@@ -91,18 +90,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         return user;
     }
 
-    @Override
-    public void alert(String msg) {
-        runOnUiThread(() -> new AlertDialog.Builder(this)
-                .setTitle("Info")
-                .setMessage(msg)
-                .setPositiveButton("Okay", null)
-                .show());
-    }
-
-    @Override
-    public void goBack() {
-        getSupportFragmentManager().popBackStack();
+    public void sendLoginView(){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.containerLayout, new LoginFragment())
+                .commit();
     }
 
     @Override
@@ -120,6 +111,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
                 .commit();
     }
 
+    @Override
+    public void goBack() {
+        getSupportFragmentManager().popBackStack();
+    }
+
     public void clientToken(Return response){
         FormBody formBody = new FormBody.Builder()
                 .add("customerId", user.getCustomerId())
@@ -131,6 +127,20 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
                 .build();
         sendRequest(request, response);
     }
+
+
+    public void login(Return response, String... data){
+        FormBody formBody = new FormBody.Builder()
+                .add("email", data[0])
+                .add("pass", data[1])
+                .build();
+        Request request = new Request.Builder()
+                .url(BASE_URL + "auth/login")
+                .post(formBody)
+                .build();
+        sendRequest(request, response);
+    }
+
 
     public void register(Return response, String... data){
         FormBody formBody = new FormBody.Builder()
@@ -146,14 +156,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         sendRequest(request, response);
     }
 
-    public void login(Return response, String... data){
-        FormBody formBody = new FormBody.Builder()
-                .add("email", data[0])
-                .add("pass", data[1])
-                .build();
+    @Override
+    public void getProducts(Return response) {
         Request request = new Request.Builder()
-                .url(BASE_URL + "auth/login")
-                .post(formBody)
+                .url(BASE_URL + "product/getAll")
+                .addHeader("x-jwt-token", user.getToken())
                 .build();
         sendRequest(request, response);
     }
@@ -196,14 +203,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         });
     }
 
-    interface Return{
-
-        void response(@NotNull String response);
-
-        void error(@NotNull String response);
-
-        boolean showDialog();
-
+    @Override
+    public void alert(String msg) {
+        runOnUiThread(() -> new AlertDialog.Builder(this)
+                .setTitle("Info")
+                .setMessage(msg)
+                .setPositiveButton("Okay", null)
+                .show());
     }
 
 
@@ -224,4 +230,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
             dialog.dismiss();
         }
     }
+
+    interface Return{
+
+        void response(@NotNull String response);
+
+        void error(@NotNull String response);
+
+        boolean showDialog();
+
+    }
+
+
 }
