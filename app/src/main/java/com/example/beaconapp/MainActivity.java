@@ -15,7 +15,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final static String TOKEN = "";
+    private final static String TOKEN = "06e8c088-fae4-419c-aeb6-c56e8def1c42";
     BCBeaconManager beaconManager;
 
     @Override
@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
     private BCBeaconManagerCallback mBeaconManagerCallback = new BCBeaconManagerCallback()
     {
         @Override
-        public void didEnterSite( final BCSite site ) {}
-        
+        public void didRangeBlueCatsBeacons( final List<BCBeacon> beacons ) {}
+
     };
 
 }
