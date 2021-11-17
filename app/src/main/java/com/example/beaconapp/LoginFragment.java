@@ -68,6 +68,9 @@ public class LoginFragment extends Fragment {
         binding = FragmentLoginBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
+        binding.emailTextFieldId.setText("s@s.com");
+        binding.passwordTextFieldId.setText("test123");
+
         binding.createNewAccountId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

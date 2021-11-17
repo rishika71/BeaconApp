@@ -40,7 +40,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.UViewHol
         return position;
     }
 
-
     @Override
     public void onBindViewHolder(@NonNull UViewHolder holder, int position) {
 
@@ -55,18 +54,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.UViewHol
         holder.binding.productDiscount.setText("Discount " + product.getDiscount() + "%");
         holder.binding.textView11.setText(product.getRegion());
 
-        String photo = product.getPhoto();
-        String photoName;
-
-        if(photo != null){
-            photoName = photo.split("[.]")[0];
-        }else{
-            photoName = "noimage";
-        }
-
-        int resId = parent.getContext().getResources().getIdentifier(photoName, "drawable", parent.getContext().getPackageName());
         Picasso.get()
-                .load(resId)
+                .load(product.getPhoto())
                 .into(holder.binding.productImage);
 
     }
