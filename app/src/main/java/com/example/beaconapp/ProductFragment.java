@@ -44,6 +44,10 @@ public class ProductFragment extends Fragment {
 
     static String current_beacon = null;
 
+    static String new_beacon = null;
+
+    static int count = 0;
+
     static HashMap<String, String> data = new HashMap<>(); // serial number - region
 
     IProducts am;
@@ -64,8 +68,10 @@ public class ProductFragment extends Fragment {
             super.didRangeBlueCatsBeacons(beacons);
 
             if(beacons.size() <= 0){ // if no beacons detected then change to global
-                current_beacon = null;
-                updateProducts(null);
+                if(current_beacon != null){
+                    current_beacon = null;
+                    updateProducts(null);
+                }
                 return;
             }
 
@@ -82,16 +88,35 @@ public class ProductFragment extends Fragment {
             }
 
             if(min == BCBeacon.BCProximity.BC_PROXIMITY_FAR){ // if min distance is far, then change to global
-                current_beacon = null;
-                updateProducts(null);
+                if(current_beacon != null){
+                    current_beacon = null;
+                    updateProducts(null);
+                }
                 return;
             }
 
             ArrayList<String> closest_beacons = groups.get(min);
             if(current_beacon == null || !closest_beacons.contains(current_beacon)) { // if current closest beacon is already in nearest beacons then skip update
-                current_beacon = closest_beacons.get(0);
 
-                updateProducts(data.get(current_beacon)); // change product list
+                if(new_beacon != null && !closest_beacons.contains(new_beacon)){
+                    count = 0;
+                    new_beacon = closest_beacons.get(0);
+                    return;
+                }
+
+                if(new_beacon == null){
+                    count = 0;
+                    new_beacon = closest_beacons.get(0);
+                }
+
+                if(count++ > 4){ // only update if count is more than 4 else skip
+                    current_beacon = new_beacon;
+                    new_beacon = null;
+                    count = 0;
+                    updateProducts(data.get(current_beacon)); // change product list
+
+                }
+
 
             }
         }
