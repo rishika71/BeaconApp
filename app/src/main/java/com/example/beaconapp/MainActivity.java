@@ -1,22 +1,18 @@
 package com.example.beaconapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.bluecats.sdk.BCBeacon;
 import com.bluecats.sdk.BCBeaconManager;
 import com.bluecats.sdk.BCBeaconManagerCallback;
+import com.bluecats.sdk.BCMeasurement;
 import com.bluecats.sdk.BCSite;
 import com.bluecats.sdk.BlueCatsSDK;
 import com.example.beaconapp.models.User;
@@ -27,15 +23,24 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity implements LoginFragment.ILogin, RegisterFragment.IRegister, ProductFragment.IProducts {
 
     private final OkHttpClient client = new OkHttpClient();
-    public static final String BASE_URL  = "https://mysterious-beach-05426.herokuapp.com/"; // http://10.0.2.2:3000/
-    private static final String BEACON_TOKEN = "06e8c088-fae4-419c-aeb6-c56e8def1c42";
+    public static final String BASE_URL  = "https://mysterious-beach-05426.herokuapp.com/"; // https://mysterious-beach-05426.herokuapp.com/ or http://10.0.2.2:3000/
 
-    BCBeaconManager beaconManager;
     ProgressDialog dialog;
     User user = null;
 
@@ -44,41 +49,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BlueCatsSDK.startPurringWithAppToken(getApplicationContext(), BEACON_TOKEN);
-
-        beaconManager = new BCBeaconManager();
-        beaconManager.registerCallback( mBeaconManagerCallback );
-
         sendLoginView();
-
     }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-
-        BlueCatsSDK.didEnterForeground();
-        beaconManager.registerCallback( mBeaconManagerCallback );
-    }
-
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-
-        BlueCatsSDK.didEnterBackground();
-        beaconManager.unregisterCallback( mBeaconManagerCallback );
-    }
-
-
-
-    private BCBeaconManagerCallback mBeaconManagerCallback = new BCBeaconManagerCallback()
-    {
-        @Override
-        public void didRangeBlueCatsBeacons( final List<BCBeacon> beacons ) {}
-
-    };
 
     @Override
     public void setUser(User user) {
@@ -116,19 +88,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         getSupportFragmentManager().popBackStack();
     }
 
-    public void clientToken(Return response){
-        FormBody formBody = new FormBody.Builder()
-                .add("customerId", user.getCustomerId())
-                .build();
-        Request request = new Request.Builder()
-                .url(BASE_URL + "product/clienttoken")
-                .addHeader("x-jwt-token", user.getToken())
-                .post(formBody)
-                .build();
-        sendRequest(request, response);
-    }
-
-
     public void login(Return response, String... data){
         FormBody formBody = new FormBody.Builder()
                 .add("email", data[0])
@@ -156,11 +115,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
         sendRequest(request, response);
     }
 
-    @Override
-    public void getProducts(Return response) {
+    public void getProducts(Return response, String region) {
+        FormBody.Builder formBody = new FormBody.Builder();
+        if(region != null)
+            formBody.add("region", region);
         Request request = new Request.Builder()
                 .url(BASE_URL + "product/getAll")
                 .addHeader("x-jwt-token", user.getToken())
+                .post(formBody.build())
                 .build();
         sendRequest(request, response);
     }
@@ -210,6 +172,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.ILo
                 .setMessage(msg)
                 .setPositiveButton("Okay", null)
                 .show());
+    }
+
+    public void profile(Return response){
+        Request request = new Request.Builder()
+                .url(BASE_URL + "profile/view")
+                .addHeader("x-jwt-token", user.getToken())
+                .build();
+        sendRequest(request, response);
     }
 
 

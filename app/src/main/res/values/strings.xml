@@ -8,5 +8,5 @@
     <string name="cancel">cancel</string>
     <string name="register">register</string>
     <string name="products">Products</string>
-    <string name="welcome">Welcome</string>
+    <string name="welcome">Welcome,</string>
 </resources>
